@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BG-043 OEA-CTPAT — Lista de Asistencia a Curso de Capacitación</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #d0d4dc;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 16px 48px;
+    min-height: 100vh;
+  }
+
+  /* ── TOOLBAR ── */
+  .toolbar {
+    width: 816px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding: 10px 16px;
+    background: #2d3748;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  }
+  .toolbar-left {
+    font-size: 12px;
+    color: #a0aec0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toolbar-left span { color: #e2e8f0; font-weight: 600; }
+  .edit-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #48bb78;
+    color: white;
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .edit-indicator::before {
+    content: '';
+    width: 7px; height: 7px;
+    background: white;
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; } 50% { opacity:0.3; }
+  }
+  .toolbar-right { display: flex; gap: 8px; }
+  .btn {
+    padding: 7px 16px;
+    border-radius: 6px;
+    border: none;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn:hover { opacity: 0.85; transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn-clear { background: #e53e3e; color: white; }
+  .btn-print { background: #3182ce; color: white; }
+
+  /* ── PAGE ── */
+  .page {
+    background: white;
+    width: 816px;
+    min-height: 1056px;
+    padding: 36px 40px 40px;
+    box-shadow: 0 4px 28px rgba(0,0,0,0.18);
+    position: relative;
+  }
+
+  /* ── HEADER TABLE ── */
+  .header-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1.5px solid #888;
+    margin-bottom: 16px;
+  }
+  .header-table td {
+    border: 1px solid #888;
+    vertical-align: middle;
+    padding: 4px 8px;
+    font-size: 11px;
+    color: #3a3a5c;
+  }
+  .logo-cell {
+    width: 130px; text-align: center; padding: 6px 10px !important;
+  }
+  .logo-wrap {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .logo-icon {
+    width: 34px; height: 34px; background: #4a4a8c;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .logo-text {
+    font-size: 13px; font-weight: 700; color: #3a3a70;
+    line-height: 1.1; font-style: italic; text-align: left;
+  }
+  .logo-text span { font-size: 10px; font-weight: 400; color: #666; display: block; font-style: normal; }
+  .title-cell { text-align: center; padding: 6px 10px !important; }
+  .title-cell .doc-title { font-size: 13.5px; font-weight: 700; color: #222; display: block; margin-bottom: 2px; }
+  .title-cell .doc-sub { font-size: 10px; color: #555; }
+  .title-cell .doc-credits {
+    font-size: 9.5px; color: #555; margin-top: 4px;
+    display: flex; justify-content: space-between; gap: 10px;
+  }
+  .meta-cell {
+    width: 230px; font-size: 10.5px; color: #3a3a5c;
+    line-height: 1.7; padding: 6px 10px !important;
+  }
+  .meta-cell strong { font-weight: 700; }
+
+  /* ── COURSE INFO BOX ── */
+  .course-box {
+    border: 1.5px solid #888; margin-bottom: 14px;
+    display: grid; grid-template-columns: 1fr 1fr;
+  }
+  .course-name-cell {
+    border-right: 1px solid #888; padding: 10px 12px;
+    display: flex; align-items: flex-start; gap: 0;
+  }
+  .course-name-label {
+    font-size: 10.5px; font-weight: 700; color: #3a3a5c;
+    white-space: nowrap; margin-right: 8px; line-height: 1.5;
+  }
+  .course-right {
+    padding: 6px 12px; display: flex; flex-direction: column; gap: 10px; justify-content: center;
+  }
+  .field-row { display: flex; align-items: center; gap: 8px; }
+  .field-label { font-size: 10.5px; font-weight: 700; color: #3a3a5c; white-space: nowrap; }
+
+  /* ── EDITABLE FIELD STYLES ── */
+  /* These look like blank lines but accept typed input */
+  .field-input {
+    flex: 1;
+    border: none;
+    border-bottom: 1px solid #aaa;
+    outline: none;
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    color: #222;
+    background: transparent;
+    padding: 2px 4px;
+    min-height: 20px;
+    width: 100%;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .field-input:focus {
+    border-bottom: 2px solid #3182ce;
+    background: #ebf8ff;
+  }
+
+  /* course name spans full height */
+  .course-name-input {
+    flex: 1;
+    border: none;
+    border-bottom: 1px solid #aaa;
+    outline: none;
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    color: #222;
+    background: transparent;
+    padding: 2px 4px;
+    min-height: 38px;
+    width: 100%;
+    resize: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .course-name-input:focus {
+    border-bottom: 2px solid #3182ce;
+    background: #ebf8ff;
+  }
+
+  /* ── ATTENDANCE TABLE ── */
+  .attendance-header {
+    background: #5b7db1; color: white; text-align: center;
+    font-size: 12px; font-weight: 700; padding: 6px;
+    letter-spacing: 0.05em; border: 1.5px solid #888; border-bottom: none;
+  }
+  .attendance-table {
+    width: 100%; border-collapse: collapse;
+    border: 1.5px solid #888; margin-bottom: 24px;
+  }
+  .attendance-table th {
+    background: #dde4f0; color: #2a2a4a;
+    font-size: 10px; font-weight: 700; text-align: center;
+    padding: 5px 4px; border: 1px solid #888;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .attendance-table td {
+    border: 1px solid #bbb; height: 26px;
+    padding: 0; font-size: 10px; color: #333;
+  }
+  .attendance-table td.row-num {
+    text-align: center; color: #666; font-size: 10px;
+    width: 24px; background: #f9f9f9; border-color: #aaa;
+    padding: 0 4px;
+  }
+  .attendance-table td.col-empnum { width: 90px; }
+  .attendance-table td.col-firma  { width: 140px; }
+  .attendance-table td.col-puesto { width: 160px; }
+
+  /* Inputs inside table cells — fully transparent, fill the cell */
+  .cell-input {
+    width: 100%; height: 100%; min-height: 25px;
+    border: none; outline: none;
+    font-family: Arial, sans-serif; font-size: 10.5px;
+    color: #222; background: transparent;
+    padding: 2px 6px;
+    display: block;
+    transition: background 0.15s;
+  }
+  .cell-input:focus { background: #ebf8ff; }
+
+  /* Highlight entire row when any cell inside is focused */
+  .attendance-table tr:focus-within td { background: #f0f7ff; }
+  .attendance-table tr:focus-within td.row-num { background: #dbeafe; color: #1d4ed8; font-weight: 700; }
+
+  /* ── INSTRUCTOR BOX ── */
+  .instructor-box {
+    border: 1.5px solid #888; padding: 12px 20px 14px;
+    width: 55%; margin: 0 auto;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .instructor-field { display: flex; align-items: center; gap: 10px; }
+  .instructor-label { font-size: 10.5px; font-weight: 700; color: #3a3a5c; white-space: nowrap; }
+
+  /* ── PRINT STYLES ── */
+  @media print {
+    body { background: white; padding: 0; }
+    .toolbar { display: none; }
+    .page { box-shadow: none; margin: 0; width: 100%; }
+    /* Remove focus highlights from inputs on print */
+    .cell-input, .field-input, .course-name-input { background: transparent !important; }
+    .attendance-table tr:focus-within td { background: transparent; }
+    .attendance-table tr:focus-within td.row-num { background: #f9f9f9; color: #666; font-weight: 400; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── TOOLBAR ── -->
+<div class="toolbar">
+  <div class="toolbar-left">
+    <div class="edit-indicator">Editable</div>
+    <span>BG-043 OEA-CTPAT Rev 6</span>
+    — haz clic en cualquier campo para editar
+  </div>
+  <div class="toolbar-right">
+    <button class="btn btn-clear" onclick="clearAll()">🗑 Limpiar todo</button>
+    <button class="btn btn-print" onclick="window.print()">🖨 Imprimir</button>
+  </div>
+</div>
+
+<!-- ── PAGE ── -->
+<div class="page">
+
+  <!-- HEADER -->
+  <table class="header-table">
+    <tr>
+      <td class="logo-cell" rowspan="2">
+        <div class="logo-wrap">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
+              <path d="M3 17h2a2 2 0 004 0h6a2 2 0 004 0h2V9l-3-5H3v13z" stroke="white" stroke-width="1.5" fill="none"/>
+              <circle cx="7" cy="17" r="1.5" fill="white"/>
+              <circle cx="17" cy="17" r="1.5" fill="white"/>
+            </svg>
+          </div>
+          <div class="logo-text">BG Trucking<span>Logistics</span></div>
+        </div>
+      </td>
+      <td class="title-cell" rowspan="2">
+        <span class="doc-title">Lista de Asistencia a Curso de Capacitación</span>
+        <div class="doc-sub">Dueño: Recursos Humanos</div>
+        <div class="doc-credits">
+          <span>Elaboró: Mónica Pérez</span>
+          <span>Aprobó: Rogelio Murrieta</span>
+        </div>
+        <div class="doc-credits" style="margin-top:2px;">
+          <span>Revisó: Xochilt Virgen</span>
+        </div>
+      </td>
+      <td class="meta-cell">
+        <strong>Departamento:</strong> Recursos Humanos<br>
+        <strong>Fecha:</strong> Julio 22, 2016<br>
+        <strong>Fecha de última revisión:</strong> 23/07/2025<br>
+        <strong>Revisión:</strong> 6<br>
+        <strong>Código de Archivo:</strong> BG-043 OEA-CTPAT
+      </td>
+    </tr>
+  </table>
+
+  <!-- COURSE INFO -->
+  <div class="course-box">
+    <div class="course-name-cell">
+      <span class="course-name-label">NOMBRE DEL<br>CURSO:</span>
+      <!-- textarea so it can wrap to multiple lines if needed -->
+      <textarea class="course-name-input" id="nombreCurso" placeholder="Escribir nombre del curso..." rows="2"></textarea>
+    </div>
+    <div class="course-right">
+      <div class="field-row">
+        <span class="field-label">FECHA:</span>
+        <input type="text" class="field-input" id="fecha" placeholder="dd/mm/aaaa">
+      </div>
+      <div class="field-row">
+        <span class="field-label">DURACIÓN:</span>
+        <input type="text" class="field-input" id="duracion" placeholder="ej. 2 horas">
+      </div>
+    </div>
+  </div>
+
+  <!-- ATTENDANCE TABLE -->
+  <div class="attendance-header">LISTA DE ASISTENCIA</div>
+  <table class="attendance-table" id="attendanceTable">
+    <thead>
+      <tr>
+        <th style="width:24px;"></th>
+        <th class="col-empnum">Número de<br>Empleado</th>
+        <th class="col-nombre">Nombre</th>
+        <th class="col-puesto">Puesto</th>
+        <th class="col-firma">Firma</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody">
+      <!-- Rows generated by JS below -->
+    </tbody>
+  </table>
+
+  <!-- INSTRUCTOR -->
+  <div class="instructor-box">
+    <div class="instructor-field">
+      <span class="instructor-label">NOMBRE DEL INSTRUCTOR:</span>
+      <input type="text" class="field-input" id="nombreInstructor" placeholder="Nombre completo">
+    </div>
+    <div class="instructor-field">
+      <span class="instructor-label">FIRMA DEL INSTRUCTOR:</span>
+      <!-- Firma stays blank — it's a physical signature -->
+      <div style="flex:1; border-bottom:1px solid #888; min-height:20px;"></div>
+    </div>
+  </div>
+
+</div><!-- end .page -->
+
+<script>
+  // ── BUILD TABLE ROWS ──
+  // We generate 20 rows dynamically so each cell has a proper <input>
+  // and we can easily clear them all or read their values later.
+  const tbody = document.getElementById('tableBody');
+
+  for (let i = 1; i <= 20; i++) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="row-num">${i}</td>
+      <td class="col-empnum">
+        <input class="cell-input" type="text" data-row="${i}" data-col="empnum"
+               placeholder="" aria-label="Número de empleado fila ${i}">
+      </td>
+      <td class="col-nombre">
+        <input class="cell-input" type="text" data-row="${i}" data-col="nombre"
+               placeholder="" aria-label="Nombre fila ${i}">
+      </td>
+      <td class="col-puesto">
+        <input class="cell-input" type="text" data-row="${i}" data-col="puesto"
+               placeholder="" aria-label="Puesto fila ${i}">
+      </td>
+      <td class="col-firma">
+        <!-- Firma is intentionally left empty for physical signature -->
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  // ── TAB KEY NAVIGATION ──
+  // Tab moves right across columns, then jumps to the next row.
+  // This makes filling the form much faster — no need to use the mouse.
+  document.getElementById('attendanceTable').addEventListener('keydown', function(e) {
+    if (e.key !== 'Tab') return;
+
+    const input = e.target;
+    if (!input.classList.contains('cell-input')) return;
+
+    const row    = parseInt(input.dataset.row);
+    const col    = input.dataset.col;
+    const cols   = ['empnum', 'nombre', 'puesto']; // firma is not editable
+    const colIdx = cols.indexOf(col);
+
+    e.preventDefault(); // prevent default browser tab behavior
+
+    let nextRow = row;
+    let nextCol = cols[colIdx + 1];
+
+    if (!nextCol) {
+      // End of row — go to first column of next row
+      nextCol = cols[0];
+      nextRow = row + 1;
+    }
+
+    if (nextRow > 20) return; // last row reached
+
+    const nextInput = document.querySelector(
+      `input[data-row="${nextRow}"][data-col="${nextCol}"]`
+    );
+    if (nextInput) nextInput.focus();
+  });
+
+  // ── CLEAR ALL ──
+  // Resets every editable field in the document back to empty.
+  function clearAll() {
+    if (!confirm('¿Limpiar todos los datos del formulario?')) return;
+
+    // Clear header fields
+    ['nombreCurso', 'fecha', 'duracion', 'nombreInstructor'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+
+    // Clear all table cell inputs
+    document.querySelectorAll('.cell-input').forEach(input => {
+      input.value = '';
+    });
+  }
+</script>
+</body>
+</html>
