@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BG-043 OEA-CTPAT — Lista de Asistencia a Curso de Capacitación</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #d0d4dc;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 16px 48px;
+    min-height: 100vh;
+  }
+
+  /* ── TOOLBAR ── */
+  .toolbar {
+    width: 816px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding: 10px 16px;
+    background: #2d3748;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  }
+  .toolbar-left { font-size: 12px; color: #a0aec0; display: flex; align-items: center; gap: 8px; }
+  .toolbar-left span { color: #e2e8f0; font-weight: 600; }
+  .edit-indicator {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #48bb78; color: white; border-radius: 20px;
+    padding: 3px 10px; font-size: 11px; font-weight: 700;
+  }
+  .edit-indicator::before {
+    content: ''; width: 7px; height: 7px; background: white;
+    border-radius: 50%; animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .toolbar-right { display: flex; gap: 8px; }
+  .btn {
+    padding: 7px 16px; border-radius: 6px; border: none;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    font-family: Arial, sans-serif;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn:hover { opacity: 0.85; transform: translateY(-1px); }
+  .btn-clear { background: #e53e3e; color: white; }
+  .btn-print { background: #3182ce; color: white; }
+
+  /* ── PAGE ── */
+  .page {
+    background: white; width: 816px; min-height: 1056px;
+    padding: 36px 40px 40px;
+    box-shadow: 0 4px 28px rgba(0,0,0,0.18);
+  }
+
+  /* ── HEADER ── */
+  .header-table { width: 100%; border-collapse: collapse; border: 1.5px solid #888; margin-bottom: 16px; }
+  .header-table td { border: 1px solid #888; vertical-align: middle; padding: 4px 8px; font-size: 11px; color: #3a3a5c; }
+  .logo-cell { width: 130px; text-align: center; padding: 6px 10px !important; }
+  .logo-wrap { display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .logo-icon { width: 34px; height: 34px; background: #4a4a8c; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .logo-text { font-size: 13px; font-weight: 700; color: #3a3a70; line-height: 1.1; font-style: italic; text-align: left; }
+  .logo-text span { font-size: 10px; font-weight: 400; color: #666; display: block; font-style: normal; }
+  .title-cell { text-align: center; padding: 6px 10px !important; }
+  .title-cell .doc-title { font-size: 13.5px; font-weight: 700; color: #222; display: block; margin-bottom: 2px; }
+  .title-cell .doc-sub { font-size: 10px; color: #555; }
+  .title-cell .doc-credits { font-size: 9.5px; color: #555; margin-top: 4px; display: flex; justify-content: space-between; gap: 10px; }
+  .meta-cell { width: 230px; font-size: 10.5px; color: #3a3a5c; line-height: 1.7; padding: 6px 10px !important; }
+  .meta-cell strong { font-weight: 700; }
+
+  /* ── COURSE BOX ── */
+  .course-box { border: 1.5px solid #888; margin-bottom: 14px; display: grid; grid-template-columns: 1fr 1fr; }
+  .course-name-cell { border-right: 1px solid #888; padding: 10px 12px; display: flex; align-items: flex-start; }
+  .course-name-label { font-size: 10.5px; font-weight: 700; color: #3a3a5c; white-space: nowrap; margin-right: 8px; line-height: 1.5; }
+  .course-right { padding: 6px 12px; display: flex; flex-direction: column; gap: 10px; justify-content: center; }
+  .field-row { display: flex; align-items: center; gap: 8px; }
+  .field-label { font-size: 10.5px; font-weight: 700; color: #3a3a5c; white-space: nowrap; }
+  .field-input {
+    flex: 1; border: none; border-bottom: 1px solid #aaa; outline: none;
+    font-family: Arial, sans-serif; font-size: 11px; color: #222;
+    background: transparent; padding: 2px 4px; min-height: 20px; width: 100%;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .field-input:focus { border-bottom: 2px solid #3182ce; background: #ebf8ff; }
+  .course-name-input {
+    flex: 1; border: none; border-bottom: 1px solid #aaa; outline: none;
+    font-family: Arial, sans-serif; font-size: 11px; color: #222;
+    background: transparent; padding: 2px 4px; min-height: 38px; width: 100%; resize: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .course-name-input:focus { border-bottom: 2px solid #3182ce; background: #ebf8ff; }
+
+  /* ── ATTENDANCE TABLE ── */
+  .attendance-header {
+    background: #5b7db1; color: white; text-align: center;
+    font-size: 12px; font-weight: 700; padding: 6px;
+    letter-spacing: 0.05em; border: 1.5px solid #888; border-bottom: none;
+  }
+  .attendance-table { width: 100%; border-collapse: collapse; border: 1.5px solid #888; margin-bottom: 24px; }
+  .attendance-table th {
+    background: #dde4f0; color: #2a2a4a; font-size: 10px; font-weight: 700;
+    text-align: center; padding: 5px 4px; border: 1px solid #888;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .attendance-table td { border: 1px solid #bbb; height: 28px; padding: 0; font-size: 10px; color: #333; }
+  .attendance-table td.row-num {
+    text-align: center; color: #666; font-size: 10px;
+    width: 24px; background: #f9f9f9; border-color: #aaa; padding: 0 4px;
+  }
+  .attendance-table td.col-empnum { width: 90px; }
+  .attendance-table td.col-firma  { width: 150px; }
+  .attendance-table td.col-puesto { width: 155px; }
+  .attendance-table tr:focus-within td { background: #f0f7ff; }
+  .attendance-table tr:focus-within td.row-num { background: #dbeafe; color: #1d4ed8; font-weight: 700; }
+
+  .cell-input {
+    width: 100%; height: 100%; min-height: 27px; border: none; outline: none;
+    font-family: Arial, sans-serif; font-size: 10.5px; color: #222;
+    background: transparent; padding: 2px 6px; display: block;
+    transition: background 0.15s;
+  }
+  .cell-input:focus { background: #ebf8ff; }
+
+  /* ── FIRMA CELL ── */
+  /* Each firma cell shows either a "Firmar" button or the drawn signature as an image */
+  .firma-cell-inner {
+    width: 100%; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .firma-img {
+    /* The saved signature rendered as a tiny image inside the cell */
+    max-width: 100%; max-height: 26px;
+    display: none; /* hidden until a signature is saved */
+    cursor: pointer;
+  }
+  .firma-img.has-sig { display: block; }
+
+  .btn-firmar {
+    /* Small "Firmar" button shown when no signature exists yet */
+    font-size: 9px; font-weight: 700; color: #3182ce;
+    background: transparent; border: 1px dashed #93c5fd;
+    border-radius: 4px; padding: 2px 8px; cursor: pointer;
+    font-family: Arial, sans-serif;
+    transition: background 0.15s, color 0.15s;
+  }
+  .btn-firmar:hover { background: #ebf8ff; }
+  .btn-firmar.hidden { display: none; }
+
+  /* ── INSTRUCTOR SECTION ── */
+  .instructor-box {
+    border: 1.5px solid #888; padding: 12px 20px 14px;
+    width: 55%; margin: 0 auto;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .instructor-field { display: flex; align-items: center; gap: 10px; }
+  .instructor-label { font-size: 10.5px; font-weight: 700; color: #3a3a5c; white-space: nowrap; }
+  .instructor-firma-wrap {
+    flex: 1; border-bottom: 1px solid #888; min-height: 28px;
+    display: flex; align-items: center; justify-content: flex-start;
+    padding: 2px 4px; position: relative;
+  }
+  .instructor-firma-img { max-height: 26px; display: none; }
+  .instructor-firma-img.has-sig { display: block; }
+
+  /* ── SIGNATURE MODAL ── */
+  /* A full-screen overlay with a large canvas for comfortable signing */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.65);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: white; border-radius: 14px;
+    padding: 24px; width: 520px; max-width: 96vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    transform: translateY(20px);
+    transition: transform 0.2s;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .modal-title { font-size: 15px; font-weight: 700; color: #1a2332; }
+  .modal-subtitle { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+  /* The actual drawing canvas */
+  .sig-canvas {
+    display: block;
+    width: 100%;
+    height: 180px;
+    border: 2px dashed #cbd5e0;
+    border-radius: 8px;
+    background: #f8fafc;
+    cursor: crosshair;
+    touch-action: none; /* prevents page scrolling while drawing on touch */
+    margin-bottom: 12px;
+    transition: border-color 0.2s;
+  }
+  .sig-canvas.active { border-color: #3182ce; border-style: solid; background: #fff; }
+
+  .sig-hint {
+    text-align: center; font-size: 11px; color: #94a3b8;
+    margin-bottom: 14px; pointer-events: none;
+  }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .btn-modal {
+    padding: 8px 20px; border-radius: 7px; border: none;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    font-family: Arial, sans-serif; transition: opacity 0.15s;
+  }
+  .btn-modal:hover { opacity: 0.85; }
+  .btn-modal-cancel { background: #e2e8f0; color: #4a5568; }
+  .btn-modal-clear  { background: #fef3c7; color: #92400e; }
+  .btn-modal-save   { background: #3182ce; color: white; }
+  .btn-modal-save:disabled { background: #a0aec0; cursor: not-allowed; }
+
+  /* ── PRINT STYLES ── */
+  @media print {
+    body { background: white; padding: 0; }
+    .toolbar { display: none; }
+    .page { box-shadow: none; width: 100%; }
+    .btn-firmar { display: none !important; }
+    .cell-input, .field-input, .course-name-input { background: transparent !important; }
+    .attendance-table tr:focus-within td { background: transparent; }
+    .attendance-table tr:focus-within td.row-num { background: #f9f9f9; color: #666; font-weight: 400; }
+    .modal-overlay { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── TOOLBAR ── -->
+<div class="toolbar">
+  <div class="toolbar-left">
+    <div class="edit-indicator">Editable</div>
+    <span>BG-043 OEA-CTPAT Rev 6</span>
+    — haz clic en cualquier campo o en "Firmar" para agregar una firma
+  </div>
+  <div class="toolbar-right">
+    <button class="btn btn-clear" onclick="clearAll()">🗑 Limpiar todo</button>
+    <button class="btn btn-print" onclick="window.print()">🖨 Imprimir</button>
+  </div>
+</div>
+
+<!-- ── PAGE ── -->
+<div class="page">
+
+  <!-- HEADER -->
+  <table class="header-table">
+    <tr>
+      <td class="logo-cell" rowspan="2">
+        <div class="logo-wrap">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
+              <path d="M3 17h2a2 2 0 004 0h6a2 2 0 004 0h2V9l-3-5H3v13z" stroke="white" stroke-width="1.5" fill="none"/>
+              <circle cx="7" cy="17" r="1.5" fill="white"/>
+              <circle cx="17" cy="17" r="1.5" fill="white"/>
+            </svg>
+          </div>
+          <div class="logo-text">BG Trucking<span>Logistics</span></div>
+        </div>
+      </td>
+      <td class="title-cell" rowspan="2">
+        <span class="doc-title">Lista de Asistencia a Curso de Capacitación</span>
+        <div class="doc-sub">Dueño: Recursos Humanos</div>
+        <div class="doc-credits">
+          <span>Elaboró: Mónica Pérez</span>
+          <span>Aprobó: Rogelio Murrieta</span>
+        </div>
+        <div class="doc-credits" style="margin-top:2px;">
+          <span>Revisó: Xochilt Virgen</span>
+        </div>
+      </td>
+      <td class="meta-cell">
+        <strong>Departamento:</strong> Recursos Humanos<br>
+        <strong>Fecha:</strong> Julio 22, 2016<br>
+        <strong>Fecha de última revisión:</strong> 23/07/2025<br>
+        <strong>Revisión:</strong> 6<br>
+        <strong>Código de Archivo:</strong> BG-043 OEA-CTPAT
+      </td>
+    </tr>
+  </table>
+
+  <!-- COURSE INFO -->
+  <div class="course-box">
+    <div class="course-name-cell">
+      <span class="course-name-label">NOMBRE DEL<br>CURSO:</span>
+      <textarea class="course-name-input" id="nombreCurso" placeholder="Escribir nombre del curso..." rows="2"></textarea>
+    </div>
+    <div class="course-right">
+      <div class="field-row">
+        <span class="field-label">FECHA:</span>
+        <input type="text" class="field-input" id="fecha" placeholder="dd/mm/aaaa">
+      </div>
+      <div class="field-row">
+        <span class="field-label">DURACIÓN:</span>
+        <input type="text" class="field-input" id="duracion" placeholder="ej. 2 horas">
+      </div>
+    </div>
+  </div>
+
+  <!-- ATTENDANCE TABLE -->
+  <div class="attendance-header">LISTA DE ASISTENCIA</div>
+  <table class="attendance-table" id="attendanceTable">
+    <thead>
+      <tr>
+        <th style="width:24px;"></th>
+        <th class="col-empnum">Número de<br>Empleado</th>
+        <th class="col-nombre">Nombre</th>
+        <th class="col-puesto">Puesto</th>
+        <th class="col-firma">Firma</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+
+  <!-- INSTRUCTOR -->
+  <div class="instructor-box">
+    <div class="instructor-field">
+      <span class="instructor-label">NOMBRE DEL INSTRUCTOR:</span>
+      <input type="text" class="field-input" id="nombreInstructor" placeholder="Nombre completo">
+    </div>
+    <div class="instructor-field">
+      <span class="instructor-label">FIRMA DEL INSTRUCTOR:</span>
+      <div class="instructor-firma-wrap" id="instructorFirmaWrap">
+        <img class="instructor-firma-img" id="instructorFirmaImg" src="" alt="Firma instructor">
+        <button class="btn-firmar" id="instructorFirmaBtn" onclick="openModal('instructor')">✎ Firmar</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end .page -->
+
+
+<!-- ══════════════════════════════════════════
+     SIGNATURE MODAL
+     This is the popup where users draw their signature.
+     A single modal is reused for all rows (and the instructor),
+     swapping targets via the `currentTarget` variable.
+═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">✍️ Firma digital</div>
+        <div class="modal-subtitle" id="modalSubtitle">Dibuja tu firma con el mouse o con el dedo</div>
+      </div>
+    </div>
+
+    <!-- The canvas where the signature is drawn -->
+    <canvas class="sig-canvas" id="sigCanvas"></canvas>
+    <div class="sig-hint" id="sigHint">Dibuja aquí tu firma</div>
+
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-modal btn-modal-clear"  onclick="clearCanvas()">🗑 Borrar</button>
+      <button class="btn-modal btn-modal-save"   id="btnSave" onclick="saveSignature()" disabled>Guardar firma</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ════════════════════════════════════════════
+// 1. BUILD TABLE ROWS
+// Each row gets inputs for the text columns and a special Firma cell
+// with a "Firmar" button that opens the modal.
+// ════════════════════════════════════════════
+const tbody = document.getElementById('tableBody');
+
+for (let i = 1; i <= 20; i++) {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td class="row-num">${i}</td>
+    <td class="col-empnum">
+      <input class="cell-input" type="text" data-row="${i}" data-col="empnum"
+             aria-label="Número de empleado fila ${i}">
+    </td>
+    <td class="col-nombre">
+      <input class="cell-input" type="text" data-row="${i}" data-col="nombre"
+             aria-label="Nombre fila ${i}">
+    </td>
+    <td class="col-puesto">
+      <input class="cell-input" type="text" data-row="${i}" data-col="puesto"
+             aria-label="Puesto fila ${i}">
+    </td>
+    <td class="col-firma">
+      <div class="firma-cell-inner">
+        <!-- Once signed, the signature DataURL is put here as an <img> -->
+        <img class="firma-img" id="firma-img-${i}" src="" alt="Firma ${i}">
+        <!-- Before signing, show this button -->
+        <button class="btn-firmar" id="firma-btn-${i}"
+                onclick="openModal(${i})">✎ Firmar</button>
+      </div>
+    </td>
+  `;
+  tbody.appendChild(tr);
+}
+
+// ════════════════════════════════════════════
+// 2. TAB NAVIGATION across cells
+// ════════════════════════════════════════════
+document.getElementById('attendanceTable').addEventListener('keydown', function(e) {
+  if (e.key !== 'Tab') return;
+  const input = e.target;
+  if (!input.classList.contains('cell-input')) return;
+
+  const row    = parseInt(input.dataset.row);
+  const col    = input.dataset.col;
+  const cols   = ['empnum', 'nombre', 'puesto'];
+  const colIdx = cols.indexOf(col);
+
+  e.preventDefault();
+
+  let nextRow = row;
+  let nextCol = cols[colIdx + 1];
+
+  if (!nextCol) {
+    nextCol = cols[0];
+    nextRow = row + 1;
+  }
+
+  if (nextRow > 20) return;
+
+  const nextInput = document.querySelector(
+    `input[data-row="${nextRow}"][data-col="${nextCol}"]`
+  );
+  if (nextInput) nextInput.focus();
+});
+
+
+// ════════════════════════════════════════════
+// 3. SIGNATURE MODAL
+//
+// How it works:
+//   - openModal(target) opens the modal and records which row (or 'instructor')
+//     will receive the saved signature.
+//   - The user draws on a <canvas> using mouse or touch events.
+//   - saveSignature() converts the canvas to a PNG DataURL and puts it
+//     into the corresponding <img> tag in the table.
+// ════════════════════════════════════════════
+
+const canvas       = document.getElementById('sigCanvas');
+const ctx          = canvas.getContext('2d');
+const modalOverlay = document.getElementById('modalOverlay');
+const btnSave      = document.getElementById('btnSave');
+
+let isDrawing   = false;   // tracks whether the pen is currently down
+let hasSigned   = false;   // tracks whether the user drew anything (enables Save)
+let currentTarget = null;  // which row (number) or 'instructor' is being signed
+
+// --- Open / close ---
+
+function openModal(target) {
+  currentTarget = target;
+  const subtitle = document.getElementById('modalSubtitle');
+
+  if (target === 'instructor') {
+    subtitle.textContent = 'Firma del Instructor';
+  } else {
+    // Try to show the employee's name in the subtitle for context
+    const nombreInput = document.querySelector(`input[data-row="${target}"][data-col="nombre"]`);
+    const nombre = nombreInput && nombreInput.value.trim();
+    subtitle.textContent = nombre
+      ? `Firma de: ${nombre}`
+      : `Fila ${target} — Dibuja tu firma con el mouse o con el dedo`;
+  }
+
+  // Reset canvas before opening
+  clearCanvas();
+
+  // Set the canvas internal resolution to match its CSS display size.
+  // This is important: without it, drawings are blurry or misaligned.
+  const rect = canvas.getBoundingClientRect();
+  canvas.width  = rect.width  || 468;
+  canvas.height = rect.height || 180;
+
+  // Prepare the drawing context
+  ctx.strokeStyle = '#1a2332'; // dark ink color
+  ctx.lineWidth   = 2.2;
+  ctx.lineCap     = 'round';  // rounded stroke ends look more like real ink
+  ctx.lineJoin    = 'round';
+
+  modalOverlay.classList.add('open');
+  document.getElementById('sigHint').style.display = 'block';
+}
+
+function closeModal() {
+  modalOverlay.classList.remove('open');
+  currentTarget = null;
+}
+
+// Close modal when clicking the dark overlay (outside the modal box)
+modalOverlay.addEventListener('click', function(e) {
+  if (e.target === modalOverlay) closeModal();
+});
+
+// --- Drawing logic ---
+
+// Helper: get the correct X/Y position from either a mouse or touch event,
+// adjusted to be relative to the canvas (not the page).
+function getPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  // Touch events carry a `touches` list; mouse events carry clientX/clientY directly.
+  const src = e.touches ? e.touches[0] : e;
+  return {
+    x: src.clientX - rect.left,
+    y: src.clientY - rect.top
+  };
+}
+
+function startDraw(e) {
+  e.preventDefault();
+  isDrawing = true;
+  const pos = getPos(e);
+  ctx.beginPath();
+  ctx.moveTo(pos.x, pos.y);
+  // Hide the hint text once the user starts drawing
+  document.getElementById('sigHint').style.display = 'none';
+  canvas.classList.add('active');
+}
+
+function draw(e) {
+  if (!isDrawing) return;
+  e.preventDefault();
+  const pos = getPos(e);
+  ctx.lineTo(pos.x, pos.y);
+  ctx.stroke();
+  // Mark that something was drawn — enables the Save button
+  if (!hasSigned) {
+    hasSigned = true;
+    btnSave.disabled = false;
+  }
+}
+
+function endDraw(e) {
+  if (!isDrawing) return;
+  e.preventDefault();
+  isDrawing = false;
+  ctx.closePath();
+}
+
+// Mouse events
+canvas.addEventListener('mousedown',  startDraw);
+canvas.addEventListener('mousemove',  draw);
+canvas.addEventListener('mouseup',    endDraw);
+canvas.addEventListener('mouseleave', endDraw);
+
+// Touch events — `{ passive: false }` is required to allow e.preventDefault()
+// which stops the page from scrolling while the user signs.
+canvas.addEventListener('touchstart', startDraw, { passive: false });
+canvas.addEventListener('touchmove',  draw,      { passive: false });
+canvas.addEventListener('touchend',   endDraw,   { passive: false });
+
+
+// --- Clear canvas ---
+
+function clearCanvas() {
+  if (!canvas.width) {
+    // First open — set size
+    const rect = canvas.getBoundingClientRect();
+    canvas.width  = rect.width  || 468;
+    canvas.height = rect.height || 180;
+  }
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  hasSigned = false;
+  btnSave.disabled = true;
+  canvas.classList.remove('active');
+  document.getElementById('sigHint').style.display = 'block';
+}
+
+// --- Save signature ---
+
+function saveSignature() {
+  if (!hasSigned || !currentTarget) return;
+
+  // Export the canvas to a PNG DataURL (base64-encoded image)
+  const dataURL = canvas.toDataURL('image/png');
+
+  if (currentTarget === 'instructor') {
+    const img = document.getElementById('instructorFirmaImg');
+    const btn = document.getElementById('instructorFirmaBtn');
+    img.src = dataURL;
+    img.classList.add('has-sig');
+    btn.textContent = '✎ Editar';
+    // Make the image clickable to re-open the modal and redraw
+    img.onclick = () => openModal('instructor');
+
+  } else {
+    const img = document.getElementById(`firma-img-${currentTarget}`);
+    const btn = document.getElementById(`firma-btn-${currentTarget}`);
+    img.src = dataURL;
+    img.classList.add('has-sig');
+    btn.classList.add('hidden'); // hide "Firmar" — replaced by the image
+    // Clicking the saved signature re-opens modal so it can be redrawn
+    img.onclick = () => openModal(currentTarget);
+    img.style.cursor = 'pointer';
+    img.title = 'Clic para volver a firmar';
+  }
+
+  closeModal();
+}
+
+
+// ════════════════════════════════════════════
+// 4. CLEAR ALL
+// Resets every field, including all signatures.
+// ════════════════════════════════════════════
+function clearAll() {
+  if (!confirm('¿Limpiar todos los datos y firmas del formulario?')) return;
+
+  ['nombreCurso', 'fecha', 'duracion', 'nombreInstructor'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+
+  document.querySelectorAll('.cell-input').forEach(input => { input.value = ''; });
+
+  // Clear all row signatures
+  for (let i = 1; i <= 20; i++) {
+    const img = document.getElementById(`firma-img-${i}`);
+    const btn = document.getElementById(`firma-btn-${i}`);
+    if (img) { img.src = ''; img.classList.remove('has-sig'); img.onclick = null; }
+    if (btn) { btn.classList.remove('hidden'); btn.textContent = '✎ Firmar'; }
+  }
+
+  // Clear instructor signature
+  const iImg = document.getElementById('instructorFirmaImg');
+  const iBtn = document.getElementById('instructorFirmaBtn');
+  if (iImg) { iImg.src = ''; iImg.classList.remove('has-sig'); }
+  if (iBtn) { iBtn.textContent = '✎ Firmar'; }
+}
+</script>
+</body>
+</html>
