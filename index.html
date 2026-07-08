@@ -630,7 +630,7 @@ function clearAll() {
   document.querySelectorAll('.cell-input').forEach(input => { input.value = ''; });
 
   // Clear all row signatures
-  for (let i = 1; i <= 20; i++) {
+  for (let i = 1; i <= 18; i++) {
     const img = document.getElementById(`firma-img-${i}`);
     const btn = document.getElementById(`firma-btn-${i}`);
     if (img) { img.src = ''; img.classList.remove('has-sig'); img.onclick = null; }
